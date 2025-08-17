@@ -118,6 +118,9 @@ export class GoogleMapsScraper extends ScraperInterface {
       console.log(chalk.blue('🚀 Starting original Google Maps orchestration...'));
       console.log(chalk.gray(`   Command: node run.js "${userQuery}" ${maxResultsPerSubQuery}`));
       
+      // Note: Auto-save is handled by the Maps scraper itself (maps_scraper/run.js)
+      // No need for wrapper-level auto-save since it's built into the orchestration
+      
       return new Promise((resolve, reject) => {
         const child = spawn('node', ['run.js', userQuery, maxResultsPerSubQuery.toString()], {
           cwd: './maps_scraper',
@@ -129,6 +132,35 @@ export class GoogleMapsScraper extends ScraperInterface {
             SESSION_TIMESTAMP: this.sessionTimestamp  // Human-readable timestamp
           }
         });
+
+        // Interruption handler for Ctrl+C  
+        const handleInterruption = async () => {
+          console.log(chalk.yellow('\n⚠️  Google Maps scraper interrupted by user'));
+          
+          // Try to save current partial results
+          try {
+            const partialResults = await this.parseOriginalScraperResults().catch(() => []);
+            if (partialResults.length > 0) {
+              console.log(chalk.blue(`💾 Saving ${partialResults.length} partial Google Maps results...`));
+              console.log(chalk.green(`✅ Partial results saved successfully`));
+              console.log(chalk.cyan(`📁 File location: maps_scraper/scraping_results_session_${this.sessionId}.json`));
+              console.log(chalk.blue('💡 These results include business names, addresses, phones, and emails'));
+            } else {
+              console.log(chalk.yellow('⚠️  No results to save - scraper was interrupted too early'));
+            }
+          } catch (error) {
+            console.log(chalk.red(`❌ Failed to save partial results: ${error.message}`));
+          }
+          
+          // Kill the child process
+          child.kill('SIGTERM');
+          console.log(chalk.gray('\nGoogle Maps scraper terminated by user.'));
+          process.exit(0);
+        };
+
+        // Set up interruption handlers
+        process.on('SIGINT', handleInterruption);
+        process.on('SIGTERM', handleInterruption);
         
         let stdout = '';
         let stderr = '';
@@ -147,7 +179,12 @@ export class GoogleMapsScraper extends ScraperInterface {
         });
         
         child.on('close', (code) => {
+          // Clean up interruption handlers
+          process.removeListener('SIGINT', handleInterruption);
+          process.removeListener('SIGTERM', handleInterruption);
+          
           if (code === 0) {
+            console.log(chalk.green('✅ Google Maps scraper completed successfully'));
             // Parse results from the generated file
             this.parseOriginalScraperResults()
               .then(resolve)
@@ -158,6 +195,9 @@ export class GoogleMapsScraper extends ScraperInterface {
         });
         
         child.on('error', (error) => {
+          // Clean up interruption handlers on error
+          process.removeListener('SIGINT', handleInterruption);
+          process.removeListener('SIGTERM', handleInterruption);
           reject(new Error(`Failed to start maps scraper: ${error.message}`));
         });
       });
@@ -209,9 +249,26 @@ export class GoogleMapsScraper extends ScraperInterface {
       
       const resultsPath = path.join(resultsDir, mostRecent.name);
       const resultsContent = fs.readFileSync(resultsPath, 'utf8');
-      const results = JSON.parse(resultsContent);
+      const data = JSON.parse(resultsContent);
       
-      console.log(chalk.blue(`📊 Loaded ${results.length} results from: ${mostRecent.name}`));
+      // Handle the structured JSON format with metadata and results
+      let results;
+      if (data.results && Array.isArray(data.results)) {
+        results = data.results;
+        console.log(chalk.blue(`📊 Loaded ${results.length} results from: ${mostRecent.name}`));
+        if (data.metadata) {
+          console.log(chalk.gray(`   📋 Business Type: ${data.metadata.businessType}`));
+          console.log(chalk.gray(`   📍 Location: ${data.metadata.location}`));
+          console.log(chalk.gray(`   ⏰ Scraped: ${data.metadata.scrapedAtLocal}`));
+        }
+      } else if (Array.isArray(data)) {
+        // Fallback for simple array format
+        results = data;
+        console.log(chalk.blue(`📊 Loaded ${results.length} results from: ${mostRecent.name}`));
+      } else {
+        console.log(chalk.yellow('⚠️  Unexpected JSON structure, attempting to extract results...'));
+        results = [];
+      }
       
       return results;
       
@@ -225,10 +282,20 @@ export class GoogleMapsScraper extends ScraperInterface {
    * Transform results based on data type
    */
   transformResults(results, dataType) {
-    if (!Array.isArray(results)) {
-      console.log(chalk.yellow('⚠️  Google Maps returned non-array results, converting...'));
+    // Validate and ensure results is an array
+    if (!results) {
+      console.log(chalk.yellow('⚠️  No results provided to transform'));
       return [];
     }
+    
+    if (!Array.isArray(results)) {
+      console.log(chalk.yellow('⚠️  Google Maps returned non-array results, converting...'));
+      console.log(chalk.gray(`   Received type: ${typeof results}`));
+      console.log(chalk.gray(`   Received value: ${JSON.stringify(results).substring(0, 100)}...`));
+      return [];
+    }
+    
+    console.log(chalk.blue(`📊 Transforming ${results.length} Google Maps results for dataType: ${dataType}`));
     
     switch (dataType) {
       case 'contacts':

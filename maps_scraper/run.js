@@ -534,7 +534,7 @@ class FlexibleBusinessScraper {
   }
 
   // Save results to file (overwrites previous results)
-  saveResults(results, businessType, location) {
+  saveResults(results, businessType, location, isAutoSave = false) {
     // Use session ID for unique filename if running in unified mode
     const sessionSuffix = process.env.SESSION_ID ? `_session_${process.env.SESSION_ID}` : '';
     const filename = `scraping_results${sessionSuffix}.json`;
@@ -546,13 +546,48 @@ class FlexibleBusinessScraper {
         location: location,
         totalResults: results.length,
         scrapedAt: new Date().toISOString(),
-        scrapedAtLocal: new Date().toLocaleString()
+        scrapedAtLocal: new Date().toLocaleString(),
+        isAutoSave: isAutoSave
       },
       results: results
     };
 
+    // Save to current directory (original behavior)
     fs.writeFileSync(filename, JSON.stringify(resultData, null, 2));
     console.log(`\n💾 Results saved to: ${filename}`);
+    
+    // Also save to unified results folder when running in unified mode
+    if (process.env.SESSION_ID) {
+      const path = require('path');
+      const unifiedResultsDir = path.join('..', 'results');
+      
+      try {
+        // Ensure unified results directory exists
+        if (!fs.existsSync(unifiedResultsDir)) {
+          fs.mkdirSync(unifiedResultsDir, { recursive: true });
+        }
+        
+        const niche = `${businessType}_${location}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_').toLowerCase();
+        
+        let unifiedFilename;
+        if (isAutoSave) {
+          // For auto-saves, use a consistent filename (overwrites previous auto-saves)
+          unifiedFilename = `${niche}_google_maps_autosave.json`;
+        } else {
+          // For final saves, use timestamped filename
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+          unifiedFilename = `${niche}_google_maps_complete_${timestamp}.json`;
+        }
+        
+        const unifiedPath = path.join(unifiedResultsDir, unifiedFilename);
+        
+        fs.writeFileSync(unifiedPath, JSON.stringify(resultData, null, 2));
+        console.log(`📁 Also saved to unified results: ${unifiedFilename}`);
+      } catch (error) {
+        console.log(`⚠️  Could not save to unified results: ${error.message}`);
+      }
+    }
+    
     return filename;
   }
 
@@ -666,10 +701,141 @@ async function orchestrateScraping(userQuery, maxResultsPerSubQuery) {
 
   const scraper = new FlexibleBusinessScraper();
   let allCombinedResults = [];
+  
+  // Auto-save functionality (every 120 seconds like other scrapers)
+  let autoSaveInterval = null;
+  let lastAutoSaveTime = 0;
+  const AUTO_SAVE_INTERVAL = 120000; // 120 seconds
+  
+  // Shared deduplication function for consistency
+  const deduplicateResults = (results) => {
+    const uniqueResults = [];
+    const seenBusinesses = new Set();
+    
+    // Helper function to normalize phone numbers for comparison
+    const normalizePhone = (phone) => {
+      if (!phone || phone === 'Not found') return 'NONE';
+      return phone.replace(/[\s\-\+\(\)]/g, '').toLowerCase();
+    };
+    
+    // Helper function to normalize business names for comparison
+    const normalizeName = (name) => {
+      if (!name) return 'NONE';
+      return name.toLowerCase()
+        .replace(/[^\w\s]/g, '') // Remove special characters
+        .replace(/\s+/g, ' ')    // Normalize spaces
+        .trim();
+    };
+
+    results.forEach(business => {
+      const normalizedPhone = normalizePhone(business.phone);
+      const normalizedName = normalizeName(business.name);
+      
+      // Create multiple identifiers for robust deduplication
+      const phoneIdentifier = normalizedPhone !== 'NONE' ? `phone:${normalizedPhone}` : null;
+      const nameIdentifier = normalizedName !== 'NONE' ? `name:${normalizedName}` : null;
+      const combinedIdentifier = `${normalizedName}|${normalizedPhone}`;
+      
+      // Check if this business is already seen by any identifier
+      let isDuplicate = false;
+      if (phoneIdentifier && seenBusinesses.has(phoneIdentifier)) {
+        isDuplicate = true;
+      }
+      if (nameIdentifier && seenBusinesses.has(nameIdentifier)) {
+        isDuplicate = true;
+      }
+      if (seenBusinesses.has(combinedIdentifier)) {
+        isDuplicate = true;
+      }
+      
+      if (!isDuplicate) {
+        // Add all identifiers to prevent future duplicates
+        if (phoneIdentifier) seenBusinesses.add(phoneIdentifier);
+        if (nameIdentifier) seenBusinesses.add(nameIdentifier);
+        seenBusinesses.add(combinedIdentifier);
+        uniqueResults.push(business);
+      }
+    });
+    
+    return uniqueResults;
+  };
+  
+  const startAutoSave = (businessType, location) => {
+    if (autoSaveInterval) return; // Already started
+    
+    console.log(`🔄 Auto-save enabled: Saving every ${AUTO_SAVE_INTERVAL / 1000} seconds`);
+    autoSaveInterval = setInterval(() => {
+      const now = Date.now();
+      if (allCombinedResults.length > 0 && (now - lastAutoSaveTime >= AUTO_SAVE_INTERVAL)) {
+        // Deduplicate before auto-saving
+        const uniqueResults = deduplicateResults(allCombinedResults);
+        const duplicatesRemoved = allCombinedResults.length - uniqueResults.length;
+        
+        console.log(`\n💾 Auto-saving ${allCombinedResults.length} Google Maps results...`);
+        console.log(`🔧 Deduplicating: ${duplicatesRemoved} duplicates removed`);
+        console.log(`✅ Saving ${uniqueResults.length} unique results`);
+        
+        try {
+          scraper.saveResults(uniqueResults, businessType, location, true); // isAutoSave = true
+          lastAutoSaveTime = now;
+          console.log(`✅ Auto-save completed successfully`);
+          console.log(`📋 Google Maps results auto-saved - interruption will recover data\n`);
+        } catch (error) {
+          console.log(`❌ Auto-save failed: ${error.message}`);
+        }
+      }
+    }, 30000); // Check every 30 seconds
+  };
+  
+  const stopAutoSave = () => {
+    if (autoSaveInterval) {
+      clearInterval(autoSaveInterval);
+      autoSaveInterval = null;
+      console.log(`🔄 Auto-save disabled`);
+    }
+  };
+
+  // Interruption handler for Ctrl+C
+  const handleInterruption = () => {
+    console.log('\n⚠️  Google Maps scraper interrupted by user');
+    stopAutoSave();
+    
+    if (allCombinedResults.length > 0) {
+      // Deduplicate before saving interrupted results
+      const uniqueResults = deduplicateResults(allCombinedResults);
+      const duplicatesRemoved = allCombinedResults.length - uniqueResults.length;
+      
+      console.log(`💾 Saving ${allCombinedResults.length} partial Google Maps results...`);
+      console.log(`🔧 Deduplicating: ${duplicatesRemoved} duplicates removed`);
+      console.log(`✅ Saving ${uniqueResults.length} unique results`);
+      
+      try {
+        const { businessType, location } = parseQuery(userQuery);
+        const filename = scraper.saveResults(uniqueResults, businessType, location, true); // isAutoSave = true for interruption
+        console.log(`✅ Partial results saved successfully to: ${filename}`);
+        console.log(`📁 File location: maps_scraper/`);
+        console.log('💡 These results include business names, addresses, phones, and emails');
+      } catch (error) {
+        console.log(`❌ Failed to save partial results: ${error.message}`);
+      }
+    } else {
+      console.log('⚠️  No results to save - scraper was interrupted too early');
+    }
+    
+    console.log('\nGoogle Maps scraper terminated by user.');
+    process.exit(0);
+  };
+
+  // Set up interruption handlers
+  process.on('SIGINT', handleInterruption);
+  process.on('SIGTERM', handleInterruption);
 
   try {
     const { businessType, location } = parseQuery(userQuery);
     console.log(`Initial parsed business type: "${businessType}", location: "${location}"`);
+
+    // Start auto-save
+    startAutoSave(businessType, location);
 
     // STEP 1: Generate Main Queries
     console.log(`\n${'▓'.repeat(60)}`);
@@ -724,22 +890,23 @@ async function orchestrateScraping(userQuery, maxResultsPerSubQuery) {
     console.log(`${'▓'.repeat(80)}`);
     console.log(`📊 TOTAL UNIQUE BUSINESSES FOUND: ${allCombinedResults.length}`);
 
-    // Deduplicate final results (assuming 'name' and 'phone' make a business unique enough)
-    const uniqueResults = [];
-    const seenBusinesses = new Set();
-
-    allCombinedResults.forEach(business => {
-      const identifier = `${business.name}-${business.phone}`; // Or any other unique identifier
-      if (!seenBusinesses.has(identifier)) {
-        seenBusinesses.add(identifier);
-        uniqueResults.push(business);
-      }
-    });
+    // Use shared deduplication function for consistency
+    const uniqueResults = deduplicateResults(allCombinedResults);
+    const duplicatesRemoved = allCombinedResults.length - uniqueResults.length;
+    
+    console.log(`🔧 Final deduplication: ${duplicatesRemoved} duplicates removed`);
 
     console.log(`📊 TOTAL DEDUPLICATED BUSINESSES: ${uniqueResults.length}`);
 
     scraper.displayResults(uniqueResults, businessType, location);
-    const filename = scraper.saveResults(uniqueResults, businessType, location);
+    const filename = scraper.saveResults(uniqueResults, businessType, location, false); // isAutoSave = false for final save
+
+    // Stop auto-save before completion
+    stopAutoSave();
+
+    // Clean up interruption handlers
+    process.removeListener('SIGINT', handleInterruption);
+    process.removeListener('SIGTERM', handleInterruption);
 
     console.log(`\n🎉 ENHANCED SCRAPING COMPLETED SUCCESSFULLY!`);
     console.log(`💾 Results saved to: ${filename}`);
@@ -747,6 +914,13 @@ async function orchestrateScraping(userQuery, maxResultsPerSubQuery) {
     console.log(`⏱️  Scraping session completed at: ${new Date().toLocaleString()}\n`);
 
   } catch (error) {
+    // Stop auto-save in case of error
+    stopAutoSave();
+    
+    // Clean up interruption handlers
+    process.removeListener('SIGINT', handleInterruption);
+    process.removeListener('SIGTERM', handleInterruption);
+    
     console.log(`\n❌ ENHANCED SCRAPING FAILED`);
     console.log(`💥 Error: ${error.message}`);
     console.log(`⏱️  Failed at: ${new Date().toLocaleString()}\n`);
