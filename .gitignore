@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime files
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+env.config
+
+# API Keys and sensitive data
+**/env.config
+config/keys.js
+config/secrets.js
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Results and output files
+results/
+*.xlsx
+*.csv
+*.json
+*.txt
+*_results_*
+*_autosave_*
+*_partial_*
+scraping_results*.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Auto-save files
+*_autosave_*
+*_session_*
+
+# Test files
+test-*.js
+
+# Backup files
+*.bak
+*.backup
+
+# Windows specific
+desktop.ini
+$RECYCLE.BIN/
+
+# MacOS specific
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux specific
+*~
