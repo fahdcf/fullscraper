@@ -129,7 +129,9 @@ export class GoogleMapsScraper extends ScraperInterface {
             ...process.env, 
             FORCE_COLOR: '1',  // Enable colors in child process
             SESSION_ID: this.sessionId.toString(),  // Unique session ID
-            SESSION_TIMESTAMP: this.sessionTimestamp  // Human-readable timestamp
+            SESSION_TIMESTAMP: this.sessionTimestamp,  // Human-readable timestamp
+            // Pass the user's Gemini API key from their session
+            GEMINI_API_KEY: process.env.GEMINI_API_KEY || this.options?.geminiKey || this.apiKeys?.geminiKey
           }
         });
 
@@ -384,6 +386,10 @@ export class GoogleMapsScraper extends ScraperInterface {
   async setup(options = {}) {
     await super.setup(options);
     
+    // Store API keys for use in child process
+    this.apiKeys = options.apiKeys || {};
+    this.options = options;
+    
     console.log(chalk.gray('⚙️  Configuring Google Maps scraper...'));
     
     // Validate that Google Maps dependencies are available
@@ -398,6 +404,13 @@ export class GoogleMapsScraper extends ScraperInterface {
     // Google Maps specific setup
     console.log(chalk.gray('🗺️  Optimizing for local business discovery...'));
     console.log(chalk.gray('🤖 AI address selection enabled'));
+    
+    // Log API key status (without exposing the actual key)
+    if (this.apiKeys.geminiKey || process.env.GEMINI_API_KEY) {
+      console.log(chalk.gray('🔑 Gemini API key: Available'));
+    } else {
+      console.log(chalk.yellow('⚠️  Gemini API key: Not found - sub-query generation may fail'));
+    }
   }
 
   /**

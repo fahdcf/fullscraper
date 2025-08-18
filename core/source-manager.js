@@ -19,7 +19,7 @@ export class SourceManager {
    * Main execution method - routes to appropriate scraper
    */
   async run(niche, source, dataType, format, options = {}) {
-    const { onResult, onBatch, onProgress } = options;
+    const { onResult, onBatch, onProgress, apiKeys } = options;
     this.isProcessing = true;
     this.currentSource = source;
     
@@ -37,21 +37,22 @@ export class SourceManager {
         throw new Error(`Invalid niche format for ${source}`);
       }
       
-      // Run scraping with unified interface
-      console.log(chalk.blue.bold(`🚀 Starting ${this.getSourceDisplayName(source)} scraper...\n`));
-      
-      // If we have callbacks, use them to stream results
-      if (onResult || onBatch || onProgress) {
-        // Create a results collector
-        const allResults = [];
-        let processedCount = 0;
+              // Run scraping with unified interface
+        console.log(chalk.blue.bold(`🚀 Starting ${this.getSourceDisplayName(source)} scraper...\n`));
         
-        // Run the scraper first to get results
-        const results = await scraper.scrape(niche, { 
-          dataType, 
-          format,
-          maxResults: this.getMaxResults(source)
-        });
+        // If we have callbacks, use them to stream results
+        if (onResult || onBatch || onProgress) {
+          // Create a results collector
+          const allResults = [];
+          let processedCount = 0;
+          
+          // Run the scraper first to get results
+          const results = await scraper.scrape(niche, { 
+            dataType, 
+            format,
+            maxResults: this.getMaxResults(source),
+            apiKeys: apiKeys || {} // Pass API keys to the scraper
+          });
         
         // Handle empty results gracefully
         if (!results || results.length === 0) {
@@ -109,7 +110,8 @@ export class SourceManager {
         const results = await scraper.scrape(niche, { 
           dataType, 
           format,
-          maxResults: this.getMaxResults(source)
+          maxResults: this.getMaxResults(source),
+          apiKeys: apiKeys || {} // Pass API keys to the scraper
         });
         
         // Handle empty results gracefully

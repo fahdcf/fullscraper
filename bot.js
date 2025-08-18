@@ -31,9 +31,20 @@ const __dirname = path.dirname(__filename);
 const SESSIONS_FILE = path.join(__dirname, 'sessions.json');
 const CODES_FILE = path.join(__dirname, 'codes.json');
 const AUTH_DIR = path.join(__dirname, 'auth_info');
+const PENDING_RESULTS_FILE = path.join(__dirname, 'pending_results.json');
 
-// Active jobs tracking
-const activeJobs = new Map(); // jid -> { abort: AbortController, status: string }
+// Active jobs tracking with offline resilience
+const activeJobs = new Map(); // jid -> { abort: AbortController, status: string, startTime: Date, results: any }
+const pendingResults = new Map(); // jid -> { filePath: string, meta: any, timestamp: Date }
+
+// Connection management
+let sock = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY = 5000; // 5 seconds
+
+// Offline job completion tracking
+const completedJobs = new Map(); // jid -> { filePath: string, meta: any, completedAt: Date }
 
 // Helper functions
 function loadJson(filePath, defaultValue = {}) {
@@ -73,12 +84,118 @@ async function sendChunkedMessage(sock, jid, text, maxChars = 4000) {
       }
     } catch (error) {
       console.error('Error sending chunk:', error.message);
+      
+      // Check if it's a connection error
+      if (error.message.includes('Connection Closed') || error.message.includes('Connection closed')) {
+        console.log(chalk.red('❌ Connection lost during message sending'));
+        throw new Error('Connection lost');
+      }
     }
+  }
+}
+
+// Check if WhatsApp connection is stable
+function isConnectionStable(sock) {
+  try {
+    const hasSock = !!sock;
+    const hasUser = !!sock?.user;
+    
+    // Baileys might not have a connection property, so we check if we can access user
+    const canAccessUser = hasSock && hasUser;
+    
+    console.log(chalk.blue(`🔍 Connection check: sock=${hasSock}, user=${hasUser}, canAccess=${canAccessUser}`));
+    
+    return canAccessUser;
+  } catch (error) {
+    console.log(chalk.red(`❌ Connection check error: ${error.message}`));
+    return false;
+  }
+}
+
+// Test connection by checking WebSocket state and user info
+async function testConnection(sock) {
+  try {
+    if (!sock) return false;
+    
+    // Simple connection check - just verify socket exists and has basic properties
+    if (!sock.user || !sock.connection) return false;
+    
+    // Check if connection is open
+    if (sock.connection !== 'open') return false;
+    
+    return true;
+  } catch (error) {
+    console.log(chalk.yellow(`⚠️ Connection test error: ${error.message}`));
+    return false;
+  }
+}
+
+// Check and send pending results when user comes back online
+async function checkAndSendPendingResults() {
+  if (!sock) return;
+  
+  for (const [jid, pendingResult] of pendingResults.entries()) {
+    try {
+      console.log(chalk.blue(`📱 Checking pending results for ${jid}...`));
+      
+      // Check if file still exists
+      if (fs.existsSync(pendingResult.filePath)) {
+        console.log(chalk.blue(`📄 Found pending results file: ${pendingResult.filePath}`));
+        
+        // Send the results
+        await sendResultsToUser(sock, jid, pendingResult.filePath, pendingResult.meta);
+        
+        // Remove from pending
+        pendingResults.delete(jid);
+        savePendingResults(); // Save updated pending results
+        console.log(chalk.green(`✅ Pending results sent successfully to ${jid}`));
+      } else {
+        console.log(chalk.yellow(`⚠️ Pending results file not found: ${pendingResult.filePath}`));
+        pendingResults.delete(jid);
+        savePendingResults(); // Save updated pending results
+      }
+    } catch (error) {
+      console.log(chalk.red(`❌ Failed to send pending results to ${jid}: ${error.message}`));
+    }
+  }
+}
+
+// Save pending results to disk
+function savePendingResults() {
+  try {
+    const data = {};
+    for (const [jid, result] of pendingResults.entries()) {
+      data[jid] = result;
+    }
+    fs.writeFileSync(PENDING_RESULTS_FILE, JSON.stringify(data, null, 2));
+    console.log(chalk.blue(`💾 Pending results saved to disk`));
+  } catch (error) {
+    console.error('❌ Failed to save pending results:', error.message);
+  }
+}
+
+// Load pending results from disk
+function loadPendingResults() {
+  try {
+    if (fs.existsSync(PENDING_RESULTS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PENDING_RESULTS_FILE, 'utf8'));
+      for (const [jid, result] of Object.entries(data)) {
+        pendingResults.set(jid, result);
+      }
+      console.log(chalk.blue(`📱 Loaded ${pendingResults.size} pending results from disk`));
+    }
+  } catch (error) {
+    console.error('❌ Failed to load pending results:', error.message);
   }
 }
 
 async function sendFile(sock, jid, filePath, caption = '') {
   try {
+    console.log(chalk.blue(`🔍 sendFile: Starting file send process...`));
+    console.log(chalk.blue(`🔍 sendFile: File path: ${filePath}`));
+    console.log(chalk.blue(`🔍 sendFile: JID: ${jid}`));
+    console.log(chalk.blue(`🔍 sendFile: Caption: ${caption}`));
+    
     if (!fs.existsSync(filePath)) {
       throw new Error('File not found');
     }
@@ -86,6 +203,16 @@ async function sendFile(sock, jid, filePath, caption = '') {
     const fileName = path.basename(filePath);
     const fileData = fs.readFileSync(filePath);
     const fileExt = path.extname(fileName).toLowerCase();
+    
+    console.log(chalk.blue(`🔍 sendFile: File name: ${fileName}`));
+    console.log(chalk.blue(`🔍 sendFile: File size: ${fileData.length} bytes`));
+    console.log(chalk.blue(`🔍 sendFile: File extension: ${fileExt}`));
+    
+    // Check file size limit (WhatsApp has limits)
+    const maxSize = 16 * 1024 * 1024; // 16MB limit
+    if (fileData.length > maxSize) {
+      throw new Error(`File too large: ${(fileData.length / 1024 / 1024).toFixed(2)}MB (max: 16MB)`);
+    }
     
     let mimetype;
     switch (fileExt) {
@@ -104,22 +231,137 @@ async function sendFile(sock, jid, filePath, caption = '') {
       default:
         mimetype = 'application/octet-stream';
     }
+    
+    console.log(chalk.blue(`🔍 sendFile: MIME type: ${mimetype}`));
 
-    await sock.sendMessage(jid, {
+    console.log(chalk.blue(`🔍 sendFile: Attempting to send message with document...`));
+    
+    // Simple connection check
+    if (!isConnectionStable(sock)) {
+      throw new Error('Connection not stable');
+    }
+    
+    const messageResult = await sock.sendMessage(jid, {
       document: fileData,
       fileName: fileName,
       mimetype: mimetype,
       caption: caption
     });
-
-            console.log(chalk.green(`📎 File sent: ${fileName}`));
+    
+    console.log(chalk.blue(`🔍 sendFile: Message result: ${JSON.stringify(messageResult)}`));
+    console.log(chalk.green(`📎 File sent successfully: ${fileName}`));
+    
+    // Verify the message was sent
+    if (messageResult && messageResult.key) {
+      console.log(chalk.green(`✅ Message confirmed sent with key: ${messageResult.key.id}`));
+    }
+    
     return true;
   } catch (error) {
     console.error('❌ Error sending file:', error.message);
-    await sock.sendMessage(jid, { 
-      text: `❌ Could not send file: ${error.message}` 
-    });
+    console.error('❌ Error stack:', error.stack);
+    
+    // Don't try to send error message if connection is lost
+    if (isConnectionStable(sock)) {
+      try {
+        await sock.sendMessage(jid, { 
+          text: `❌ Could not send file: ${error.message}` 
+        });
+      } catch (sendError) {
+        console.error('❌ Failed to send error message:', sendError.message);
+      }
+    }
     return false;
+  }
+}
+
+// Dedicated function to send results to user with proper format handling
+async function sendResultsToUser(sock, jid, filePath, meta) {
+  try {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Results file not found: ${filePath}`);
+    }
+    
+    const fileName = path.basename(filePath);
+    const fileExtension = path.extname(filePath).toLowerCase();
+    
+    // Create appropriate caption based on source and format
+    let caption = `📄 **Results File: ${fileName}**\n\n`;
+    caption += `📊 **Summary:** ${meta.totalResults || 'Unknown'} results\n`;
+    caption += `🎯 **Source:** ${meta.source || 'Unknown'}\n`;
+    caption += `📋 **Format:** ${meta.format || fileExtension.toUpperCase()}\n`;
+    
+    // Add source-specific information
+    if (meta.source === 'GOOGLE') {
+      caption += `🔍 **Type:** Google Search Results\n`;
+    } else if (meta.source === 'LINKEDIN') {
+      caption += `💼 **Type:** LinkedIn Profiles\n`;
+    } else if (meta.source === 'MAPS') {
+      caption += `🗺️ **Type:** Google Maps Businesses\n`;
+    }
+    
+    console.log(chalk.blue(`📤 Sending results to ${jid}: ${fileName}`));
+    
+    // Try to send file with retry mechanism
+    let fileSent = false;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (!fileSent && retryCount < maxRetries) {
+      try {
+        retryCount++;
+        console.log(chalk.blue(`🔄 Attempt ${retryCount}/${maxRetries} to send results file...`));
+        
+        // Simple connection check
+        if (!isConnectionStable(sock)) {
+          throw new Error('Connection not stable');
+        }
+        
+        // Small delay between attempts
+        if (retryCount > 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+        
+        // Try to send file as document attachment
+        fileSent = await sendFile(sock, jid, filePath, caption);
+        
+        if (fileSent) {
+          console.log(chalk.green(`📄 Results file sent successfully as attachment: ${fileName}`));
+          break;
+        }
+      } catch (fileError) {
+        console.log(chalk.yellow(`⚠️ Attempt ${retryCount} failed: ${fileError.message}`));
+        
+        if (retryCount < maxRetries) {
+          console.log(chalk.blue(`⏳ Waiting 2 seconds before retry...`));
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
+    
+    // If all retries failed, use fallback
+    if (!fileSent) {
+      console.log(chalk.red(`❌ All ${maxRetries} attempts failed. Using fallback method.`));
+      
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        
+        await sock.sendMessage(jid, { 
+          text: `📄 **Results File (Fallback): ${fileName}**\n\n\`\`\`\n${fileContent}\n\`\`\``
+        });
+        
+        console.log(chalk.green(`📄 Results content sent as text fallback: ${fileName}`));
+      } catch (textError) {
+        console.log(chalk.red(`❌ Failed to send results content as text: ${textError.message}`));
+        throw new Error('All sending methods failed');
+      }
+    }
+    
+    return fileSent;
+    
+  } catch (error) {
+    console.log(chalk.red(`❌ Failed to send results to user: ${error.message}`));
+    throw error;
   }
 }
 
@@ -634,7 +876,9 @@ async function handleMessage(sock, message) {
        const abortController = new AbortController();
        activeJobs.set(jid, {
          abort: abortController,
-         status: 'initializing'
+         status: 'initializing',
+         startTime: new Date(),
+         results: null
        });
 
        session.status = 'running';
@@ -709,6 +953,9 @@ async function handleMessage(sock, message) {
                if (jobStatus) {
                  jobStatus.status = `${phase}: ${processed}/${total || '?'} processed`;
                  
+                 // Store progress in job status
+                 jobStatus.lastProgress = { processed, total, phase, timestamp: new Date() };
+                 
                  // Send phase updates for all phases
                  try {
                    let phaseText = '';
@@ -740,6 +987,24 @@ async function handleMessage(sock, message) {
 
          // Job completed successfully
          clearInterval(heartbeatInterval); // Stop heartbeat
+         
+         // Store results for offline delivery (only if immediate sending fails)
+         if (result && result.filePath && result.meta) {
+           const jobInfo = activeJobs.get(jid);
+           if (jobInfo) {
+             jobInfo.results = result;
+             jobInfo.status = 'completed';
+             jobInfo.completedAt = new Date();
+           }
+           
+           // Convert to absolute path if it's relative
+           const absoluteFilePath = path.isAbsolute(result.filePath) 
+             ? result.filePath 
+             : path.resolve(result.filePath);
+           
+           console.log(chalk.blue(`📱 Results prepared for user ${jid}: ${absoluteFilePath}`));
+         }
+         
          activeJobs.delete(jid);
          session.status = 'idle';
          session.meta.totalJobs++;
@@ -750,10 +1015,51 @@ async function handleMessage(sock, message) {
          const summary = formatResultSummary(result.results, result.meta);
          await sendChunkedMessage(sock, jid, summary);
 
-         // Send the file
+         // Send the file using the dedicated function
          if (result.filePath) {
-           await sendFile(sock, jid, result.filePath, 
-             `📎 ${result.meta.totalResults} results in ${result.meta.format} format`);
+           try {
+             // Convert to absolute path if it's relative
+             const absoluteFilePath = path.isAbsolute(result.filePath) 
+               ? result.filePath 
+               : path.resolve(result.filePath);
+             
+             console.log(chalk.blue(`📎 Sending results file: ${absoluteFilePath}`));
+             
+             // Use the dedicated function for reliable file sending
+             await sendResultsToUser(sock, jid, absoluteFilePath, result.meta);
+             
+             console.log(chalk.green(`✅ Results file sent successfully to ${jid}`));
+             
+             // File sent successfully - no need to store as pending
+             
+           } catch (error) {
+             console.log(chalk.red(`❌ Failed to send results file: ${error.message}`));
+             
+             // Only store as pending if immediate sending failed
+             if (result && result.filePath && result.meta) {
+               const absoluteFilePath = path.isAbsolute(result.filePath) 
+                 ? result.filePath 
+                 : path.resolve(result.filePath);
+               
+               // Store in pending results for offline delivery
+               pendingResults.set(jid, {
+                 filePath: absoluteFilePath,
+                 meta: result.meta,
+                 timestamp: new Date()
+               });
+               
+               // Save pending results to disk
+               savePendingResults();
+               
+               console.log(chalk.blue(`📱 Results stored for offline delivery: ${absoluteFilePath}`));
+             }
+             
+             await sock.sendMessage(jid, { 
+               text: `⚠️ **File sending failed.** Results are saved and will be sent when you're back online.`
+             });
+           }
+         } else {
+           console.log(chalk.red(`❌ No file path provided in result`));
          }
 
          console.log(chalk.green(`✅ Job completed: ${result.meta.totalResults} results`));
@@ -802,6 +1108,11 @@ async function handleMessage(sock, message) {
       
       // Check if user has completed authentication
       if (!session.code) {
+        if (!isConnectionStable(sock)) {
+          console.log(chalk.red('❌ Connection lost, cannot send authentication message'));
+          return;
+        }
+        
         await sock.sendMessage(jid, { 
           text: '🔐 **Authentication required.** Please send your access code first.\n\n' +
                 '💬 **Format:** CODE: your_code_here\n' +
@@ -809,6 +1120,44 @@ async function handleMessage(sock, message) {
                 '💡 Contact admin if you don\'t have an access code.'
         });
         return;
+      }
+      
+      // Check if there are pending results for this user
+      if (pendingResults.has(jid)) {
+        const pendingResult = pendingResults.get(jid);
+        const wantsSend = /^SEND(\s+RESULTS)?$/i.test(text);
+        const wantsSkip = /^(DISMISS|SKIP|IGNORE)$/i.test(text);
+
+        if (wantsSend) {
+          console.log(chalk.blue(`📱 User requested to send pending results for ${jid}: ${pendingResult.filePath}`));
+          try {
+            await sendResultsToUser(sock, jid, pendingResult.filePath, pendingResult.meta);
+            pendingResults.delete(jid);
+            savePendingResults();
+            console.log(chalk.green(`✅ Pending results sent and cleared for ${jid}`));
+            // After sending pending, stop further handling of this message
+            return;
+          } catch (error) {
+            console.log(chalk.red(`❌ Failed to send pending results: ${error.message}`));
+            await sock.sendMessage(jid, { 
+              text: `⚠️ **Error sending pending results.** Please try again or contact support.`
+            });
+            // Do not return; continue to handle this message normally
+          }
+        } else if (wantsSkip) {
+          pendingResults.delete(jid);
+          savePendingResults();
+          await sock.sendMessage(jid, { 
+            text: `🧹 **Pending results dismissed.** You can start a new search now.`
+          });
+          // Continue to handle the current message
+        } else {
+          // Non-blocking notice; proceed with the new message flow
+          await sock.sendMessage(jid, { 
+            text: `📎 **You have pending results.** Reply \`SEND\` to receive them, or \`SKIP\` to discard. Continuing with your new message...`
+          });
+          // Do not return; allow new scrape flow to proceed
+        }
       }
 
          // Check if already running a job
@@ -822,6 +1171,23 @@ async function handleMessage(sock, message) {
            // Treat as search niche - but first we need to get source and data type
       const niche = text;
       
+      // Quick fix for common typos in commands (e.g., FORAMT → FORMAT)
+      if (/^FORAMT:?\s+/i.test(text)) {
+        const v = text.replace(/^FORAMT:?\s+/i, '').trim().toUpperCase();
+        if (!['XLSX', 'CSV', 'JSON'].includes(v)) {
+          await sock.sendMessage(jid, { 
+            text: '⚠️ Invalid format. Use: FORMAT: XLSX | CSV | JSON'
+          });
+          return;
+        }
+        session.prefs = session.prefs || {};
+        session.prefs.format = v;
+        sessions[jid] = session;
+        saveJson(SESSIONS_FILE, sessions);
+        await sock.sendMessage(jid, { text: `🗂️ Format set to ${v}.` });
+        return;
+      }
+
       // Check if this looks like a command (starts with a command word)
       const commandWords = ['SOURCE:', 'TYPE:', 'FORMAT:', 'START', 'CODE:', 'LIMIT:', 'STATUS', 'STOP', 'RESET', 'HELP'];
       const isCommand = commandWords.some(cmd => text.toUpperCase().startsWith(cmd));
@@ -838,6 +1204,14 @@ async function handleMessage(sock, message) {
         return;
       }
       
+      // If a niche is already pending, don't overwrite it with unrelated text
+      if (session.pendingNiche) {
+        await sock.sendMessage(jid, { 
+          text: `⚠️ You already set the niche: "${session.pendingNiche}". Send START to begin, or send RESET to change the niche.`
+        });
+        return;
+      }
+
       // Ask user to select source first
       await sock.sendMessage(jid, { 
         text: `🎯 **Select Data Source for "${niche}":**\n\n` +
@@ -851,8 +1225,8 @@ async function handleMessage(sock, message) {
               `🔄 **Flow:** SOURCE → TYPE → FORMAT → START`
       });
       
-      // Store the niche for later use
-      session.pendingNiche = niche;
+      // Store the niche for later use (only if not already set)
+      session.pendingNiche = session.pendingNiche || niche;
       sessions[jid] = sessions[jid] || {};
       sessions[jid] = session;
       saveJson(SESSIONS_FILE, sessions);
@@ -873,12 +1247,41 @@ async function startBot() {
     // Initialize authentication
     const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
     
+    // Load pending results from disk
+    loadPendingResults();
+    
     // Create socket
     const sock = makeWASocket({
       auth: state,
       printQRInTerminal: false, // We'll handle QR display manually
       browser: ['Business Scraper Bot', 'Chrome', '1.0.0'],
-      defaultQueryTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 120000, // Increased timeout
+      connectTimeoutMs: 60000,
+      keepAliveIntervalMs: 10000, // Even more frequent keep-alive
+      retryRequestDelayMs: 500, // Faster retry
+      maxRetries: 10, // More retries
+      shouldIgnoreJid: jid => jid.includes('@broadcast'),
+      patchMessageBeforeSending: (msg) => {
+        const requiresPatch = !!(
+          msg.buttonsMessage 
+          || msg.templateMessage
+          || msg.listMessage
+        );
+        if (requiresPatch) {
+          msg = {
+            viewOnceMessage: {
+              message: {
+                messageContextInfo: {
+                  deviceListMetadataVersion: 2,
+                  deviceListMetadata: {},
+                },
+                ...msg,
+              },
+            },
+          };
+        }
+        return msg;
+      },
       logger: {
         level: 'silent', // Disable verbose Baileys logs
         child: () => ({ 
@@ -927,11 +1330,22 @@ async function startBot() {
         console.log(chalk.gray('   npm run admin:list    - List access codes'));
         console.log(chalk.gray('   npm run admin:add     - Add new user'));
         console.log(chalk.gray('   npm run admin:remove  - Remove user\n'));
+        
+        // Check for pending results to send when user comes back online
+        await checkAndSendPendingResults();
       }
     });
 
     // Save credentials when updated
     sock.ev.on('creds.update', saveCreds);
+
+    // Keep connection alive with periodic status checks
+    const connectionCheckInterval = setInterval(() => {
+      if (sock && sock.user) {
+        // Just log connection status
+        console.log(chalk.gray('📡 Connection status: Active'));
+      }
+    }, 60000); // Every 60 seconds
 
     // Message handler
     sock.ev.on('messages.upsert', async ({ messages }) => {
@@ -945,6 +1359,11 @@ async function startBot() {
     // Graceful shutdown
     process.on('SIGINT', async () => {
       console.log(chalk.yellow('\n🛑 Shutting down bot...'));
+      
+      // Clear connection check interval
+      if (connectionCheckInterval) {
+        clearInterval(connectionCheckInterval);
+      }
       
       // Cancel all active jobs
       for (const [jid, job] of activeJobs.entries()) {

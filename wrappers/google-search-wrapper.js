@@ -150,37 +150,7 @@ export class GoogleSearchScraper extends ScraperInterface {
       let stderr = '';
       let isResolved = false;
       
-      // Set a timeout to prevent hanging (Google Search needs more time for 25 queries)
-      const timeout = setTimeout(() => {
-        if (!isResolved) {
-          console.log(chalk.yellow('⏰ Google Search scraper timeout - forcing cleanup'));
-          console.log(chalk.blue('💾 Checking for auto-saved results before cleanup...'));
-          child.kill('SIGINT'); // Send SIGINT first to trigger auto-save
-          
-          // Give it time to save
-          setTimeout(() => {
-            if (!isResolved) {
-              child.kill('SIGKILL');
-              cleanup();
-              // Try to parse any results that might have been saved
-              this.parseGoogleSearchResults(niche)
-                .then(results => {
-                  if (results && results.length > 0) {
-                    console.log(chalk.green(`✅ Found ${results.length} saved results despite timeout`));
-                    resolve(results);
-                  } else {
-                    console.log(chalk.yellow('⚠️  No results were saved - timeout occurred too early'));
-                    resolve([]);
-                  }
-                })
-                .catch(() => {
-                  console.log(chalk.yellow('⚠️  No auto-save file found'));
-                  resolve([]);
-                });
-            }
-          }, 5000); // 5 second grace period for saving
-        }
-      }, 600000); // 10 minute timeout for Google Search
+      // No timeout - let scraper run until completion naturally
       
       // Set up interruption handling with graceful shutdown
       const handleInterruption = () => {
@@ -235,7 +205,6 @@ export class GoogleSearchScraper extends ScraperInterface {
       
       const cleanup = () => {
         isResolved = true;
-        clearTimeout(timeout);
         process.removeListener('SIGINT', handleInterruption);
         process.removeListener('SIGTERM', handleInterruption);
       };

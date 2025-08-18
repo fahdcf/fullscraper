@@ -402,15 +402,18 @@ export class ResultProcessor {
   async exportToTXT(results, filepath, source, dataType, niche) {
     let content = [];
     
+    // Prepare counts first so header and summary are consistent
+    const emails = results.filter(r => r.email).map(r => r.email);
+    const phones = results.filter(r => r.phone).map(r => r.phone);
+    const totalContacts = emails.length + phones.length;
+
     // Add header with niche and timestamp
     content.push(`# ${niche} - ${source} Results`);
     content.push(`# Generated: ${new Date().toLocaleString()}`);
-    content.push(`# Total Results: ${results.length}`);
+    content.push(`# Total Results: ${totalContacts}`);
     content.push('');
     
     // Separate emails and phones like the original Google Search format
-    const emails = results.filter(r => r.email).map(r => r.email);
-    const phones = results.filter(r => r.phone).map(r => r.phone);
     
     if (emails.length > 0) {
       content.push('EMAILS:');
@@ -431,7 +434,7 @@ export class ResultProcessor {
     content.push('========');
     content.push(`Total Emails: ${emails.length}`);
     content.push(`Total Phones: ${phones.length}`);
-    content.push(`Total Contacts: ${results.length}`);
+    content.push(`Total Contacts: ${totalContacts}`);
     
     // Write to file
     await fs.writeFile(filepath, content.join('\n'), 'utf8');

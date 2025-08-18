@@ -388,23 +388,41 @@ export class LinkedInScraper extends ScraperInterface {
       ];
       
              // Look for current session files (autosave or partial results)
-       const sessionAutosavePattern = `_linkedin_results_autosave_session_${this.sessionId}.xlsx`;
-       const sessionPartialPattern = `_linkedin_results_partial_session_${this.sessionId}.xlsx`;
-       const sessionFiles = files.filter(f => 
-         f.includes(sessionAutosavePattern) || f.includes(sessionPartialPattern)
-       );
-       
-       let resultFiles;
-       if (sessionFiles.length > 0) {
-         // Use current session autosave file (most accurate)
-         resultFiles = sessionFiles;
-         console.log(chalk.cyan('🎯 Found current session autosave file (most accurate)'));
-       } else {
-         // Don't fall back to previous sessions for interrupted early sessions
-         console.log(chalk.yellow('⚠️  No current session autosave found - scraper was interrupted before first auto-save (120s)'));
-         console.log(chalk.gray('   This means no profiles were actually processed in the current session'));
-         resultFiles = [];  // Return empty instead of using old session data
-       }
+      const sessionAutosavePattern = `_linkedin_results_autosave_session_${this.sessionId}.xlsx`;
+      const sessionPartialPattern = `_linkedin_results_partial_session_${this.sessionId}.xlsx`;
+      const sessionFiles = files.filter(f => 
+        f.includes(sessionAutosavePattern) || f.includes(sessionPartialPattern)
+      );
+      
+      // Also look for final results files (not just autosave)
+      const finalResultsPattern = `_linkedin_results_${this.sessionId}.xlsx`;
+      const finalResultsFiles = files.filter(f => f.includes(finalResultsPattern));
+      
+      let resultFiles;
+      if (sessionFiles.length > 0) {
+        // Use current session autosave file (most accurate)
+        resultFiles = sessionFiles;
+        console.log(chalk.cyan('🎯 Found current session autosave file (most accurate)'));
+      } else if (finalResultsFiles.length > 0) {
+        // Use final results file if no autosave found
+        resultFiles = finalResultsFiles;
+        console.log(chalk.cyan('🎯 Found final results file'));
+      } else {
+        // Look for any LinkedIn results files for this niche
+        const nicheLinkedInFiles = files.filter(f => 
+          f.includes('_linkedin_results_') && 
+          f.includes(nicheNormalized.replace(/_/g, '')) &&
+          f.endsWith('.xlsx')
+        );
+        
+        if (nicheLinkedInFiles.length > 0) {
+          resultFiles = nicheLinkedInFiles;
+          console.log(chalk.cyan('🎯 Found LinkedIn results files for this niche'));
+        } else {
+          console.log(chalk.yellow('⚠️  No LinkedIn results files found for this niche'));
+          resultFiles = [];
+        }
+      }
       
       if (resultFiles.length === 0) {
         console.log(chalk.yellow('⚠️  No LinkedIn results file found'));
