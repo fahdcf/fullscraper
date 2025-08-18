@@ -267,6 +267,207 @@ MIT License - feel free to use for commercial and personal projects.
 
 **"The LinkedIn integration found professional contacts we never discovered before"** - *Recruitment Firm*
 
+## 📱 WhatsApp Bot Integration
+
+### 🤖 Overview
+
+The Unified Business Scraper now includes a **WhatsApp chatbot interface** that allows users to:
+
+- 🔐 Authenticate with admin-issued access codes
+- 🎯 Choose data sources (Google, LinkedIn, Maps, or All)
+- 📄 Select output formats (XLSX, CSV, JSON)
+- 🔍 Send search queries via WhatsApp messages
+- 📊 Receive real-time progress updates
+- 📎 Get downloadable result files directly in chat
+
+### 🛠️ Setup WhatsApp Bot
+
+#### 1. Install WhatsApp Dependencies
+
+```bash
+npm install @whiskeysockets/baileys qrcode-terminal lowdb
+```
+
+#### 2. Admin: Create Access Codes
+
+```bash
+# Add a new access code with API keys
+npm run admin add abc123 YOUR_GOOGLE_KEY_1 YOUR_GOOGLE_KEY_2 YOUR_GEMINI_KEY
+
+# Or generate a random code
+npm run admin generate YOUR_GOOGLE_KEY_1 YOUR_GOOGLE_KEY_2 YOUR_GEMINI_KEY
+
+# List all codes
+npm run admin list
+
+# Remove a code
+npm run admin remove abc123
+```
+
+#### 3. Start WhatsApp Bot
+
+```bash
+npm run whatsapp
+```
+
+Scan the QR code with WhatsApp → **Linked Devices** → **Link a Device**
+
+### 📱 WhatsApp Commands
+
+#### 🔐 Authentication
+```
+CODE: abc123
+```
+Authenticate with your access code (provided by admin)
+
+#### ⚙️ Configuration Commands
+```
+SOURCE: ALL        # Set data source: GOOGLE, LINKEDIN, MAPS, ALL
+FORMAT: XLSX       # Set output format: XLSX, CSV, JSON  
+LIMIT: 300         # Set max results (1-500)
+```
+
+#### 📊 Status Commands
+```
+STATUS             # Check current job status
+STOP               # Cancel current scraping job
+RESET              # Reset preferences to defaults
+HELP               # Show all commands
+```
+
+#### 🔍 Search
+```
+dentist casablanca
+restaurant marrakech  
+web developer fes
+```
+Send any text as a search niche - the bot will start scraping!
+
+### 💬 Example Conversation
+
+```
+👤 User: CODE: abc123
+🤖 Bot: ✅ Access granted! Welcome to the Business Scraper.
+      Current Settings: Source: ALL | Format: XLSX | Limit: 300
+
+👤 User: SOURCE: maps
+🤖 Bot: 🎯 Data source set to: MAPS
+
+👤 User: dentist casablanca
+🤖 Bot: 🔍 Starting scraping job...
+      Niche: "dentist casablanca" | Source: MAPS | Format: XLSX | Limit: 300
+
+🤖 Bot: ⏱️ Progress Update: 25 results found and processing...
+🤖 Bot: ⏱️ Progress Update: 67 results found and processing...
+
+🤖 Bot: ✅ Scraping Complete!
+      📊 Results Summary:
+      • Total Results: 89
+      • Emails: 67 | Phones: 82 | Websites: 89
+      💾 File ready for download ⬇️
+
+📎 [dentist_casablanca_maps_2025-08-17T21-30-00.xlsx]
+```
+
+### 🔧 Admin Management
+
+#### Access Code Structure
+```json
+{
+  "abc123": {
+    "apiKeys": {
+      "googleSearchKeys": ["key1", "key2"],
+      "geminiKey": "gemini_key"
+    },
+    "createdAt": "2025-08-17T21:00:00Z",
+    "meta": {
+      "issuedBy": "admin",
+      "useCount": 15,
+      "lastUsed": "2025-08-17T21:30:00Z"
+    }
+  }
+}
+```
+
+#### Admin CLI Commands
+```bash
+# Create new access code
+node manage_codes.js add <code> <google_key_1> <google_key_2> <gemini_key>
+
+# Generate random code  
+node manage_codes.js generate <google_key_1> <google_key_2> <gemini_key>
+
+# List all codes (with masked keys)
+node manage_codes.js list
+
+# Show detailed code info
+node manage_codes.js info <code>
+
+# Remove access code
+node manage_codes.js remove <code>
+
+# Show help
+node manage_codes.js help
+```
+
+### 🔒 Security Features
+
+- **🔐 No Key Exposure**: API keys never shown to users
+- **👤 User Isolation**: Each WhatsApp user has isolated session
+- **📊 Usage Tracking**: Track code usage and statistics  
+- **⏱️ Rate Limiting**: Built-in delays and abuse prevention
+- **🛑 Job Control**: Users can stop long-running jobs
+- **📋 Session Management**: Persistent user preferences
+
+### 🚀 Deployment Options
+
+#### Local Development
+```bash
+npm run whatsapp
+# Scan QR code → Ready to use
+```
+
+#### Production Server
+```bash
+# Use PM2 or similar process manager
+pm2 start bot.js --name "whatsapp-scraper"
+pm2 save
+pm2 startup
+```
+
+### 📊 File Management
+
+**Results Location**: `results/`
+```
+results/
+├── dentist_casablanca_maps_2025-08-17T21-30-00.xlsx
+├── restaurant_rabat_all_sources_complete_2025-08-17T21-35-00.json
+└── web_developer_fes_google_search_2025-08-17T21-40-00.csv
+```
+
+**Auto-cleanup**: Old result files can be cleaned periodically:
+```bash
+npm run clean
+```
+
+### 🔧 Troubleshooting
+
+#### Bot Not Responding
+1. Check if bot process is running: `ps aux | grep bot.js`
+2. Restart bot: `npm run whatsapp`
+3. Re-scan QR code if connection lost
+
+#### Invalid Access Code
+1. Verify code exists: `npm run admin list`
+2. Check code spelling and format
+3. Contact admin for new code
+
+#### Scraping Errors  
+1. Check API key quotas
+2. Verify internet connection
+3. Try smaller result limits
+4. Contact support if persistent
+
 ---
 
-**Ready to supercharge your business intelligence? Start scraping with `npm start`! 🚀**
+**Ready to supercharge your business intelligence? Start scraping with `npm start` or chat via WhatsApp! 🚀**

@@ -57,7 +57,7 @@ async function saveEnvConfig(envVars) {
 GOOGLE_SEARCH_ENGINE_ID=4385aef0f424b4b5b
 
 # Gemini AI API Key (for intelligent query generation)
-GEMINI_API_KEY=AIzaSyCvcudazo8hKHHgKlJDirYHWmwb9UF0aUg
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
 
 # Request Configuration
 REQUEST_DELAY=2000

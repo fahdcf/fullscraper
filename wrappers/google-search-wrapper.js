@@ -112,7 +112,11 @@ export class GoogleSearchScraper extends ScraperInterface {
         }
       });
       
-      // Feed the answers via stdin
+      console.log(chalk.blue('   🔍 Google Search child process started'));
+      console.log(chalk.gray(`   📁 Working directory: ${process.cwd()}/google search + linkdin scraper/lead-scraper`));
+      console.log(chalk.gray(`   📄 Script: scraper.js`));
+      
+      // Feed the answers via stdin with proper timing
       const answers = [
         niche,     // Business niche
         '1',       // Google Search (Business Websites)
@@ -120,30 +124,63 @@ export class GoogleSearchScraper extends ScraperInterface {
       ];
       
       let currentAnswer = 0;
-      setTimeout(() => {
-        if (currentAnswer < answers.length) {
-          child.stdin.write(answers[currentAnswer] + '\n');
-          currentAnswer++;
-        }
-      }, 1000);
       
-      setTimeout(() => {
-        if (currentAnswer < answers.length) {
+      // Function to send answers with proper timing
+      const sendAnswer = () => {
+        if (currentAnswer < answers.length && !isResolved) {
+          console.log(chalk.gray(`   📤 Sending answer ${currentAnswer + 1}: ${answers[currentAnswer]}`));
           child.stdin.write(answers[currentAnswer] + '\n');
           currentAnswer++;
+          
+          // Schedule next answer if there are more
+          if (currentAnswer < answers.length) {
+            setTimeout(sendAnswer, 1500); // 1.5 second delay between answers
+          }
         }
-      }, 2000);
+      };
       
-      setTimeout(() => {
-        if (currentAnswer < answers.length) {
-          child.stdin.write(answers[currentAnswer] + '\n');
-          currentAnswer++;
-        }
-      }, 3000);
+      // Start sending answers after a short delay
+      console.log(chalk.blue('   📤 Will send answers to Google Search scraper:'));
+      console.log(chalk.gray(`     1. Niche: "${niche}"`));
+      console.log(chalk.gray(`     2. Source: "1" (Google Search)`));
+      console.log(chalk.gray(`     3. Type: "3" (Both emails and phones)`));
+      setTimeout(sendAnswer, 500);
       
       let stdout = '';
       let stderr = '';
       let isResolved = false;
+      
+      // Set a timeout to prevent hanging (Google Search needs more time for 25 queries)
+      const timeout = setTimeout(() => {
+        if (!isResolved) {
+          console.log(chalk.yellow('⏰ Google Search scraper timeout - forcing cleanup'));
+          console.log(chalk.blue('💾 Checking for auto-saved results before cleanup...'));
+          child.kill('SIGINT'); // Send SIGINT first to trigger auto-save
+          
+          // Give it time to save
+          setTimeout(() => {
+            if (!isResolved) {
+              child.kill('SIGKILL');
+              cleanup();
+              // Try to parse any results that might have been saved
+              this.parseGoogleSearchResults(niche)
+                .then(results => {
+                  if (results && results.length > 0) {
+                    console.log(chalk.green(`✅ Found ${results.length} saved results despite timeout`));
+                    resolve(results);
+                  } else {
+                    console.log(chalk.yellow('⚠️  No results were saved - timeout occurred too early'));
+                    resolve([]);
+                  }
+                })
+                .catch(() => {
+                  console.log(chalk.yellow('⚠️  No auto-save file found'));
+                  resolve([]);
+                });
+            }
+          }, 5000); // 5 second grace period for saving
+        }
+      }, 600000); // 10 minute timeout for Google Search
       
       // Set up interruption handling with graceful shutdown
       const handleInterruption = () => {
@@ -198,6 +235,7 @@ export class GoogleSearchScraper extends ScraperInterface {
       
       const cleanup = () => {
         isResolved = true;
+        clearTimeout(timeout);
         process.removeListener('SIGINT', handleInterruption);
         process.removeListener('SIGTERM', handleInterruption);
       };
@@ -716,9 +754,12 @@ export class GoogleSearchScraper extends ScraperInterface {
           }
         }
         
-        // Extract phones
-        if (inPhoneSection && trimmedLine && trimmedLine.startsWith('+212')) {
-          phones.push(trimmedLine);
+        // Extract phones (more flexible pattern matching)
+        if (inPhoneSection && trimmedLine && !trimmedLine.startsWith('Total') && !trimmedLine.startsWith('Generated')) {
+          // Look for various phone number formats
+          if (trimmedLine.match(/^(\+212|0|212)?[\d\s\-\(\)]+$/)) {
+            phones.push(trimmedLine);
+          }
         }
       }
       
@@ -738,6 +779,9 @@ export class GoogleSearchScraper extends ScraperInterface {
       }
       
       console.log(chalk.blue(`📊 Parsed ${results.length} contacts from TXT file`));
+      console.log(chalk.gray(`   📧 Emails found: ${emails.length}`));
+      console.log(chalk.gray(`   📞 Phones found: ${phones.length}`));
+      console.log(chalk.gray(`   📄 File: ${mostRecent.name}`));
       return results;
              
     } catch (error) {

@@ -84,7 +84,7 @@ Generated Queries:`;
   // Helper: Generate sub-queries (neighborhoods/sub-cities) using Gemini
   async generateSubQueriesWithGemini(mainQuery, locationContext) {
     try {
-      const apiKey = 'AIzaSyBLq9NEBbVcfRhRn9fTJcE1WtDEv6azKXo';
+      const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyBLq9NEBbVcfRhRn9fTJcE1WtDEv6azKXo';
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
       const prompt = `You are a helpful AI assistant. Given a general business search query (e.g., "cabinet dentaire fes") and a location context (e.g., "Fes"), your task is to generate 10 highly specific sub-queries. Each sub-query should target a major neighborhood or a well-known smaller area within the given city/country, related to the business type.

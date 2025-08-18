@@ -26,6 +26,12 @@ env.config
 **/env.config
 config/keys.js
 config/secrets.js
+codes.json
+sessions.json
+
+# WhatsApp bot authentication
+auth_info/
+*.session
 
 # IDE files
 .vscode/

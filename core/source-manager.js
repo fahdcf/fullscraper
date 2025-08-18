@@ -18,7 +18,8 @@ export class SourceManager {
   /**
    * Main execution method - routes to appropriate scraper
    */
-  async run(niche, source, dataType, format) {
+  async run(niche, source, dataType, format, options = {}) {
+    const { onResult, onBatch, onProgress } = options;
     this.isProcessing = true;
     this.currentSource = source;
     
@@ -38,21 +39,89 @@ export class SourceManager {
       
       // Run scraping with unified interface
       console.log(chalk.blue.bold(`🚀 Starting ${this.getSourceDisplayName(source)} scraper...\n`));
-      const results = await scraper.scrape(niche, { 
-        dataType, 
-        format,
-        maxResults: this.getMaxResults(source)
-      });
       
-      // Handle empty results gracefully
-      if (!results || results.length === 0) {
-        console.log(chalk.yellow('\n📈 Results Summary:'));
-        console.log(chalk.gray('─────────────────────────────────────'));
-        console.log(chalk.yellow('📊 Total Results: 0'));
-        console.log(chalk.gray('─────────────────────────────────────'));
-        console.log(chalk.yellow('💡 No results to save - try running longer or adjust search terms'));
-        this.isProcessing = false;
-        return [];
+      // If we have callbacks, use them to stream results
+      if (onResult || onBatch || onProgress) {
+        // Create a results collector
+        const allResults = [];
+        let processedCount = 0;
+        
+        // Run the scraper first to get results
+        const results = await scraper.scrape(niche, { 
+          dataType, 
+          format,
+          maxResults: this.getMaxResults(source)
+        });
+        
+        // Handle empty results gracefully
+        if (!results || results.length === 0) {
+          console.log(chalk.yellow('\n📈 Results Summary:'));
+          console.log(chalk.gray('─────────────────────────────────────'));
+          console.log(chalk.yellow('📊 Total Results: 0'));
+          console.log(chalk.gray('─────────────────────────────────────'));
+          console.log(chalk.yellow('💡 No results to save - try running longer or adjust search terms'));
+          this.isProcessing = false;
+          return [];
+        }
+        
+        // Process results through callbacks
+        for (let i = 0; i < results.length; i++) {
+          const result = results[i];
+          processedCount++;
+          allResults.push(result);
+          
+          // Call onResult callback
+          if (onResult) {
+            try {
+              await onResult(result);
+            } catch (error) {
+              console.error('onResult callback error:', error.message);
+            }
+          }
+          
+          // Call onProgress callback
+          if (onProgress) {
+            try {
+              await onProgress({ 
+                processed: processedCount, 
+                total: results.length, 
+                phase: 'scraping', 
+                message: `Processing result ${processedCount}/${results.length}` 
+              });
+            } catch (error) {
+              console.error('onProgress callback error:', error.message);
+            }
+          }
+        }
+        
+        // Call onBatch callback with all results
+        if (onBatch && allResults.length > 0) {
+          try {
+            await onBatch([...allResults]);
+          } catch (error) {
+            console.error('onBatch callback error:', error.message);
+          }
+        }
+        
+        return allResults;
+      } else {
+        // Original behavior without callbacks
+        const results = await scraper.scrape(niche, { 
+          dataType, 
+          format,
+          maxResults: this.getMaxResults(source)
+        });
+        
+        // Handle empty results gracefully
+        if (!results || results.length === 0) {
+          console.log(chalk.yellow('\n📈 Results Summary:'));
+          console.log(chalk.gray('─────────────────────────────────────'));
+          console.log(chalk.yellow('📊 Total Results: 0'));
+          console.log(chalk.gray('─────────────────────────────────────'));
+          console.log(chalk.yellow('💡 No results to save - try running longer or adjust search terms'));
+          this.isProcessing = false;
+          return [];
+        }
       }
       
       // Check if results are pre-processed (from auto-save recovery)
