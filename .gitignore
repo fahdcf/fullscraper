@@ -14,20 +14,8 @@ yarn-error.log*
 coverage/
 *.lcov
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-env.config
 
-# API Keys and sensitive data
-**/env.config
-config/keys.js
-config/secrets.js
-codes.json
-sessions.json
+
 
 # WhatsApp bot authentication
 auth_info/
