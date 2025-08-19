@@ -1,0 +1,25 @@
+{
+  "212680007528@s.whatsapp.net": {
+    "prefs": {
+      "source": "MAPS",
+      "format": "JSON",
+      "limit": 300,
+      "dataType": "COMPLETE"
+    },
+    "status": "idle",
+    "meta": {
+      "createdAt": "2025-08-18T02:35:44.438Z",
+      "totalJobs": 24,
+      "lastNiche": "DENTIST IN FES"
+    },
+    "code": "user1",
+    "apiKeys": {
+      "googleSearchKeys": [
+        "AIzaSyAyj4AstBsA8z3_kOIXOIaYv6Bv57krIUs",
+        "AIzaSyDr3PnZTocarHxtJbRrSwW-SAmraq5nXn4"
+      ],
+      "geminiKey": "AIzaSyBnGchXIMWD9FFk9ggsDXDGY-eRyEgs48E"
+    },
+    "pendingNiche": "Hi"
+  }
+}

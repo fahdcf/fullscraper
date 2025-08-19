@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "niche": "test dentist",
+    "source": "google_maps",
+    "dataType": "complete",
+    "scrapedAt": "2025-08-18T01:51:59.503Z",
+    "totalResults": 2
+  },
+  "results": [
+    {
+      "name": "Test Business 1",
+      "phone": "123-456-7890",
+      "location": "Test Address 1",
+      "source": "Google Maps"
+    },
+    {
+      "name": "Test Business 2",
+      "phone": "098-765-4321",
+      "location": "Test Address 2",
+      "source": "Google Maps"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "test123": {
+    "apiKeys": {
+      "googleSearchKeys": [
+        "GOOGLE_TEST_KEY_1",
+        "GOOGLE_TEST_KEY_2"
+      ],
+      "geminiKey": "GEMINI_TEST_KEY"
+    },
+    "createdAt": "2025-08-17T20:12:32.614Z",
+    "expiresAt": null,
+    "meta": {
+      "issuedBy": "admin",
+      "lastUsed": null,
+      "useCount": 0
+    }
+  },
+  "user001": {
+    "apiKeys": {
+      "googleSearchKeys": [
+        "YOUR_REAL_GOOGLE_KEY_1",
+        "YOUR_REAL_GOOGLE_KEY_2"
+      ],
+      "geminiKey": "YOUR_REAL_GEMINI_KEY"
+    },
+    "createdAt": "2025-08-17T20:19:53.445Z",
+    "expiresAt": null,
+    "meta": {
+      "issuedBy": "admin",
+      "lastUsed": null,
+      "useCount": 0
+    }
+  },
+  "user1": {
+    "apiKeys": {
+      "googleSearchKeys": [
+        "AIzaSyAyj4AstBsA8z3_kOIXOIaYv6Bv57krIUs",
+        "AIzaSyDr3PnZTocarHxtJbRrSwW-SAmraq5nXn4"
+      ],
+      "geminiKey": "AIzaSyBnGchXIMWD9FFk9ggsDXDGY-eRyEgs48E"
+    },
+    "createdAt": "2025-08-18T02:34:23.747Z",
+    "expiresAt": null,
+    "meta": {
+      "issuedBy": "admin",
+      "lastUsed": "2025-08-18T02:36:09.095Z",
+      "useCount": 1
+    }
+  }
+}

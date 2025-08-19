@@ -1,0 +1,628 @@
+{
+  "metadata": {
+    "businessType": "dentist",
+    "location": "fes",
+    "totalResults": 87,
+    "scrapedAt": "2025-08-17T16:48:46.236Z",
+    "scrapedAtLocal": "8/17/2025, 5:48:46 PM"
+  },
+  "results": [
+    {
+      "name": "Dr Sossey Alaoui Ghita",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "Dr Sossey Alaoui Ghita, Rue matran khalil matran, Espace Noor Fès 1 er étage bureau 3, Fès 30000"
+    },
+    {
+      "name": "Clinique dentaire Élite Dr Sabai Regragui Abdelhafid",
+      "phone": "05359-30960",
+      "website": "https://cliniquedentairelite.com",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre dentaire Premium 7j/7 ( sur rendez-vous)",
+      "phone": "0624-806584",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Docteur Hicham Ouenniche",
+      "phone": "0666-052175",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr SERGHINI Louay Dentiste Fès, Centre Dentaire la Fontaine",
+      "phone": "05357-61878",
+      "website": "http://centredentairefes.com",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr. Serroukh Khalid, Chirurgien Dentiste Fes Dentiste Fès Pedodontiste & implantologie Fes",
+      "phone": "05356-03678",
+      "website": "",
+      "emails": [],
+      "location": "Saada En dessus de carly, 24 avenue saint louis bureau meftaha, n13, Fès 31000"
+    },
+    {
+      "name": "Centre Dentaire Fez City Smile",
+      "phone": "05356-44067",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre dentaire agdal",
+      "phone": "0707-754554",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Dr. Taibi",
+      "phone": "0668-621724",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Fadili Souad (Cabinet)",
+      "phone": "05359-32261",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dentiste Dr. Mouad Benslimane | Cabinet du Docteur Chirurgien Dentiste à Fès",
+      "phone": "05356-24287",
+      "website": "https://dentistefes.com",
+      "emails": [],
+      "location": "4ème Etage, sur la devanture du café Paul, Espace officex, Immeuble Café Maison H"
+    },
+    {
+      "name": "Cabinet dentaire et d’esthétique IBN ATTYA ABDELLATIF",
+      "phone": "05356-25639",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Florence Fès Dr Yahya Raid",
+      "phone": "05356-53545",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet dentaire fes Dr Asmaa Meliani",
+      "phone": "05356-20909",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Clinique dentaire Cartier",
+      "phone": "0532-065565",
+      "website": "",
+      "emails": [],
+      "location": "Clinique dentaire Cartier, côté du cafe Lost, Bd Allal ben abdallah residence el youbia 5 eme étage à, Fes"
+    },
+    {
+      "name": "Cabinet Dentaire Dr Jasmin",
+      "phone": "0667-058380",
+      "website": "",
+      "emails": [],
+      "location": "n28, bureaux mikou, 52 Ave Allal Ben Abdellah, Fès 30000"
+    },
+    {
+      "name": "Centre Dentaire Dr. Tazi Omar || Fès",
+      "phone": "05357-48979",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire - Dr CHERRATE El Mehdi",
+      "phone": "05356-95447",
+      "website": "",
+      "emails": [],
+      "location": "Près de Mosquée Attakoua, N 1, Lotissement Bahij, Ain chkf"
+    },
+    {
+      "name": "Dr Cherif Elkettani Ghita Dentiste Fès",
+      "phone": "0636-214189",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Fatima Zahra Chraibi ,Centre Dentaire Chraibi",
+      "phone": "0702-171757",
+      "website": "",
+      "emails": [],
+      "location": "3ème étage, Bureaux Al Abrar, Boulevard Abdellah Chafchaouni , Bureau N'14"
+    },
+    {
+      "name": "Cabinet dentaire dr hicham ben maajouz",
+      "phone": "0661-384805",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Sossey Alaoui Ghita",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "Dr Sossey Alaoui Ghita, Rue matran khalil matran, Espace Noor Fès 1 er étage bureau 3, Fès 30000"
+    },
+    {
+      "name": "cabinet dentaire ali elamrani jai",
+      "phone": "0661-931443",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Docteur Hicham Ouenniche",
+      "phone": "0666-052175",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr. Serroukh Khalid, Chirurgien Dentiste Fes Dentiste Fès Pedodontiste & implantologie Fes",
+      "phone": "05356-03678",
+      "website": "",
+      "emails": [],
+      "location": "Saada En dessus de carly, 24 avenue saint louis bureau meftaha, n13, Fès 31000"
+    },
+    {
+      "name": "Centre dentaire agdal",
+      "phone": "0707-754554",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr SERGHINI Louay Dentiste Fès, Centre Dentaire la Fontaine",
+      "phone": "05357-61878",
+      "website": "http://centredentairefes.com",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre dentaire Premium 7j/7 ( sur rendez-vous)",
+      "phone": "0624-806584",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Dr. Taibi",
+      "phone": "0668-621724",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Cherif Elkettani Ghita Dentiste Fès",
+      "phone": "0636-214189",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet d'orthodontie Dr. Said TLEMCANI",
+      "phone": "05356-52080",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Fadili Souad (Cabinet)",
+      "phone": "05359-32261",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Tarik Ahmed (Cabinet)",
+      "phone": "05359-40100",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Fatima Zahra Chraibi ,Centre Dentaire Chraibi",
+      "phone": "0702-171757",
+      "website": "",
+      "emails": [],
+      "location": "3ème étage, Bureaux Al Abrar, Boulevard Abdellah Chafchaouni , Bureau N'14"
+    },
+    {
+      "name": "Dr. Hinchi Islah IH DENTAL CENTER الدكتورة حنشي إصلاح",
+      "phone": "0532-135656",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Chefchaouni Dr Tariq FLIS",
+      "phone": "05356-42154",
+      "website": "",
+      "emails": [],
+      "location": "N, Centre Dentaire Chefchaouni Dr Tariq FLIS, 59 Bd Abdellah Chafchaouni, Fès 30050"
+    },
+    {
+      "name": "Dentist Otman Bellamine",
+      "phone": "05356-22787",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Yazoughe Oussama (Cabinet)",
+      "phone": "05356-14742",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet dentaire Docteur SQUALLI HOUSSAINI KAMAL",
+      "phone": "05356-51659",
+      "website": "",
+      "emails": [],
+      "location": "Cabinet dentaire Docteur SQUALLI HOUSSAINI KAMAL, 1 Avenue De Palestine Immeuble Krikech Ville Nouvelle, Fes, Fès 30000"
+    },
+    {
+      "name": "Cabinet dentaire et d’esthétique IBN ATTYA ABDELLATIF",
+      "phone": "05356-25639",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dentiste Aqasbi Ouahi Asmae",
+      "phone": "05356-01473",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Kenza Moukhlesse Dentiste Fes",
+      "phone": "05356-53531",
+      "website": "https://drkenzamoukhlesse.godoc.ma",
+      "emails": [],
+      "location": "3 ème étage, Plaza, Rue Al Kandar avenue Al Hoceima immeuble Health, Fès 30000"
+    },
+    {
+      "name": "Dr Saad Debbagh Orthodontiste Fès",
+      "phone": "05359-60296",
+      "website": "https://debbaghdentalsmile.com",
+      "emails": [
+        "contact@debbagh-dental.com"
+      ],
+      "location": "fes"
+    },
+    {
+      "name": "cabinet dentaire ali elamrani jai",
+      "phone": "0661-931443",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Sossey Alaoui Ghita",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "Dr Sossey Alaoui Ghita, Rue matran khalil matran, Espace Noor Fès 1 er étage bureau 3, Fès 30000"
+    },
+    {
+      "name": "CABINET DENTAIRE BENHADDOU FES",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "bureau N 7 Étage 4, au dessus de magasin Bim, Avenue bel Air, Fès 30000"
+    },
+    {
+      "name": "Cabinet dentaire Dr. kadri badr",
+      "phone": "0666-686646",
+      "website": "https://drbadrkadri.com",
+      "emails": [
+        "drkadribadr@gmail.com"
+      ],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Dr. El Bakali",
+      "phone": "0532-174354",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet dentaire dentaluxe chirurgie lourde orale & réhabilitation fonctionnelle et esthétique Dr.chams-eddine hafdi idrissi",
+      "phone": "05356-02482",
+      "website": "",
+      "emails": [],
+      "location": "en face pharmacie sefrioui, À CÔTÉ DE BIM route ain chkef, rue kartaj, Fès 30100"
+    },
+    {
+      "name": "Cabinet dentaire Dr. khawla chraibi kaadoud",
+      "phone": "0770-090162",
+      "website": "",
+      "emails": [],
+      "location": "Cabinet dentaire Chraibi khaoula, Lot Quaraouiyne, Ain chkf, Fès 36122"
+    },
+    {
+      "name": "Centre Dentaire Chefchaouni Dr Tariq FLIS",
+      "phone": "05356-42154",
+      "website": "",
+      "emails": [],
+      "location": "N, Centre Dentaire Chefchaouni Dr Tariq FLIS, 59 Bd Abdellah Chafchaouni, Fès 30050"
+    },
+    {
+      "name": "Dr SERGHINI Louay Dentiste Fès, Centre Dentaire la Fontaine",
+      "phone": "05357-61878",
+      "website": "http://centredentairefes.com",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Dr.Soukaina Slimani",
+      "phone": "05356-26696",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Dr. Asmae Amrani Hassani | Dentiste à Narjiss, Fès",
+      "phone": "05356-19174",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Clinique dentaire Cartier",
+      "phone": "0532-065565",
+      "website": "",
+      "emails": [],
+      "location": "Clinique dentaire Cartier, côté du cafe Lost, Bd Allal ben abdallah residence el youbia 5 eme étage à, Fes"
+    },
+    {
+      "name": "Elfarricha Fouad (Dentiste)",
+      "phone": "05356-47486",
+      "website": "",
+      "emails": [],
+      "location": "Hay Essalam, Lot. 2 Ain Kadous, Fès, Fès-Boulemane"
+    },
+    {
+      "name": "Clinique Dentaire Karima El Messaoudi",
+      "phone": "05356-93832",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet dentaire benhaddou",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "35 68 12 54, Cabinet dentaire benhaddou, 30000 05, Fès 30000"
+    },
+    {
+      "name": "Dr. Serroukh Khalid, Chirurgien Dentiste Fes Dentiste Fès Pedodontiste & implantologie Fes",
+      "phone": "05356-03678",
+      "website": "",
+      "emails": [],
+      "location": "Saada En dessus de carly, 24 avenue saint louis bureau meftaha, n13, Fès 31000"
+    },
+    {
+      "name": "Guessous Abdelali (Dentiste)",
+      "phone": "05356-51057",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dentiste Dr. Mouad Benslimane | Cabinet du Docteur Chirurgien Dentiste à Fès",
+      "phone": "05356-24287",
+      "website": "https://dentistefes.com",
+      "emails": [],
+      "location": "4ème Etage, sur la devanture du café Paul, Espace officex, Immeuble Café Maison H"
+    },
+    {
+      "name": "CLINIQUE DENTAIRE ZANZIBAR",
+      "phone": "05359-41530",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Oued fès Dr. Sara Ahamdane",
+      "phone": "05356-32127",
+      "website": "",
+      "emails": [],
+      "location": "Rue 26, N 2, 2ème étage, quartier Oued Fès devant marché Oued Fès"
+    },
+    {
+      "name": "Cabinet dentaire Docteur SQUALLI HOUSSAINI KAMAL",
+      "phone": "05356-51659",
+      "website": "",
+      "emails": [],
+      "location": "Cabinet dentaire Docteur SQUALLI HOUSSAINI KAMAL, 1 Avenue De Palestine Immeuble Krikech Ville Nouvelle, Fes, Fès 30000"
+    },
+    {
+      "name": "Docteur Mahfoud Fouad",
+      "phone": "05356-20030",
+      "website": "https://centredentairemahfoudfilali.chezledocteur.net",
+      "emails": [
+        "contact@drmahfoud.com"
+      ],
+      "location": "Docteur Mahfoud Fouad, Kissariat Cle Rue Larbi Kaghat Ville Nouvelle, Fes, Fès 30000"
+    },
+    {
+      "name": "Dr Sossey Alaoui Ghita",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "Dr Sossey Alaoui Ghita, Rue matran khalil matran, Espace Noor Fès 1 er étage bureau 3, Fès 30000"
+    },
+    {
+      "name": "cabinet dentaire ali elamrani jai",
+      "phone": "0661-931443",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet Dentaire Dr. Asmae Amrani Hassani | Dentiste à Narjiss, Fès",
+      "phone": "05356-19174",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr. Serroukh Khalid, Chirurgien Dentiste Fes Dentiste Fès Pedodontiste & implantologie Fes",
+      "phone": "05356-03678",
+      "website": "",
+      "emails": [],
+      "location": "Saada En dessus de carly, 24 avenue saint louis bureau meftaha, n13, Fès 31000"
+    },
+    {
+      "name": "Centre Dentaire Dr. Tazi Omar || Fès",
+      "phone": "05357-48979",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr Kenza Moukhlesse Dentiste Fes",
+      "phone": "05356-53531",
+      "website": "https://drkenzamoukhlesse.godoc.ma",
+      "emails": [],
+      "location": "3 ème étage, Plaza, Rue Al Kandar avenue Al Hoceima immeuble Health, Fès 30000"
+    },
+    {
+      "name": "Dentiste Aqasbi Ouahi Asmae",
+      "phone": "05356-01473",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr SERGHINI Louay Dentiste Fès, Centre Dentaire la Fontaine",
+      "phone": "05357-61878",
+      "website": "http://centredentairefes.com",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Oued fès Dr. Sara Ahamdane",
+      "phone": "05356-32127",
+      "website": "",
+      "emails": [],
+      "location": "Rue 26, N 2, 2ème étage, quartier Oued Fès devant marché Oued Fès"
+    },
+    {
+      "name": "Dr Saad Debbagh Orthodontiste Fès",
+      "phone": "05359-60296",
+      "website": "https://debbaghdentalsmile.com",
+      "emails": [
+        "contact@debbagh-dental.com"
+      ],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet d'orthodontie Dr. Said TLEMCANI",
+      "phone": "05356-52080",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Fez City Smile",
+      "phone": "05356-44067",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre Dentaire Rais : Dr Rais Samir - Dr Rais Yassine - Dr Sebti Zakia -Dr Rais Kamar",
+      "phone": "",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Fadili Souad (Cabinet)",
+      "phone": "05359-32261",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "CABINET DENTAIRE BENHADDOU FES",
+      "phone": "0532-060424",
+      "website": "",
+      "emails": [],
+      "location": "bureau N 7 Étage 4, au dessus de magasin Bim, Avenue bel Air, Fès 30000"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Squalli Houssaini Saad",
+      "phone": "05356-52767",
+      "website": "",
+      "emails": [],
+      "location": "Docteur Chirurgien Dentiste Squalli Houssaini Saad, 13 Rue Abbass Mssaadi, Fes, Fès 30000"
+    },
+    {
+      "name": "Dr Akasbi Mohammed",
+      "phone": "05356-53250",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Cabinet dentaire Docteur SQUALLI HOUSSAINI KAMAL",
+      "phone": "05356-51659",
+      "website": "",
+      "emails": [],
+      "location": "Cabinet dentaire Docteur SQUALLI HOUSSAINI KAMAL, 1 Avenue De Palestine Immeuble Krikech Ville Nouvelle, Fes, Fès 30000"
+    },
+    {
+      "name": "Cabinet Dentaire Dr.Soukaina Slimani",
+      "phone": "05356-26696",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Centre dentaire agdal",
+      "phone": "0707-754554",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Docteur Chirurgien Dentiste Yazoughe Oussama (Cabinet)",
+      "phone": "05356-14742",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    },
+    {
+      "name": "Dr. Hinchi Islah IH DENTAL CENTER الدكتورة حنشي إصلاح",
+      "phone": "0532-135656",
+      "website": "",
+      "emails": [],
+      "location": "fes"
+    }
+  ]
+}

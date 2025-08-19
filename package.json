@@ -1,0 +1,82 @@
+{
+  "name": "unified-business-scraper",
+  "version": "2.0.0",
+  "description": "Unified multi-source business scraper with Google Search, LinkedIn, and Google Maps integration",
+  "main": "unified-scraper.js",
+  "type": "module",
+  "bin": {
+    "unified-scraper": "./unified-scraper.js"
+  },
+  "scripts": {
+    "start": "node unified-scraper.js",
+    "scrape": "node unified-scraper.js",
+    "google-search": "node unified-scraper.js --source=google_search",
+    "linkedin": "node unified-scraper.js --source=linkedin",
+    "google-maps": "node unified-scraper.js --source=google_maps",
+    "all-sources": "node unified-scraper.js --source=all_sources",
+    "test": "node test/test-scrapers.js",
+    "lint": "eslint .",
+    "clean": "rm -rf results/*.xlsx results/*.csv results/*.json",
+    "setup": "npm install && node setup/check-dependencies.js",
+    "whatsapp": "node bot.js",
+    "admin": "node manage_codes.js",
+    "admin:add": "node manage_codes.js add",
+    "admin:list": "node manage_codes.js list",
+    "admin:remove": "node manage_codes.js remove"
+  },
+  "keywords": [
+    "scraper",
+    "business",
+    "leads",
+    "google-search",
+    "linkedin",
+    "google-maps",
+    "contact-extraction",
+    "email-scraping",
+    "phone-extraction",
+    "business-intelligence",
+    "lead-generation",
+    "multi-source",
+    "unified-scraper",
+    "whatsapp-bot",
+    "chatbot",
+    "automation"
+  ],
+  "author": "Business Intelligence Team",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.6.0",
+    "baileys": "^6.7.18",
+    "chalk": "^5.3.0",
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^11.1.0",
+    "csv-writer": "^1.6.0",
+    "inquirer": "^10.2.0",
+    "lowdb": "^3.0.0",
+    "ora": "^7.0.1",
+    "qrcode-terminal": "^0.12.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "bugs": {
+    "url": "mailto:support@business-scraper.com"
+  },
+  "homepage": ".",
+  "files": [
+    "unified-scraper.js",
+    "core/",
+    "wrappers/",
+    "results/",
+    "README.md"
+  ]
+}
