@@ -1,5 +1,5 @@
 {
-  "212680007528@s.whatsapp.net": {
+  "212691708186@s.whatsapp.net": {
     "prefs": {
       "source": "MAPS",
       "format": "JSON",
@@ -8,9 +8,9 @@
     },
     "status": "idle",
     "meta": {
-      "createdAt": "2025-08-18T02:35:44.438Z",
-      "totalJobs": 24,
-      "lastNiche": "DENTIST IN FES"
+      "createdAt": "2025-08-20T22:11:55.914Z",
+      "totalJobs": 1,
+      "lastNiche": "Dentist in fes"
     },
     "code": "user1",
     "apiKeys": {
@@ -20,6 +20,6 @@
       ],
       "geminiKey": "AIzaSyBnGchXIMWD9FFk9ggsDXDGY-eRyEgs48E"
     },
-    "pendingNiche": "Hi"
+    "pendingNiche": "Well well well"
   }
 }

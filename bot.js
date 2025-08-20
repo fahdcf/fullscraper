@@ -988,7 +988,7 @@ async function handleMessage(sock, message) {
          // Job completed successfully
          clearInterval(heartbeatInterval); // Stop heartbeat
          
-         // Store results for offline delivery (only if immediate sending fails)
+         // Store results for offline delivery
          if (result && result.filePath && result.meta) {
            const jobInfo = activeJobs.get(jid);
            if (jobInfo) {
@@ -1002,7 +1002,17 @@ async function handleMessage(sock, message) {
              ? result.filePath 
              : path.resolve(result.filePath);
            
-           console.log(chalk.blue(`📱 Results prepared for user ${jid}: ${absoluteFilePath}`));
+           // Store in pending results for offline delivery
+           pendingResults.set(jid, {
+             filePath: absoluteFilePath,
+             meta: result.meta,
+             timestamp: new Date()
+           });
+           
+           // Save pending results to disk
+           savePendingResults();
+           
+           console.log(chalk.blue(`📱 Results stored for user ${jid}: ${absoluteFilePath}`));
          }
          
          activeJobs.delete(jid);
@@ -1029,31 +1039,10 @@ async function handleMessage(sock, message) {
              await sendResultsToUser(sock, jid, absoluteFilePath, result.meta);
              
              console.log(chalk.green(`✅ Results file sent successfully to ${jid}`));
-             
-             // File sent successfully - no need to store as pending
-             
            } catch (error) {
              console.log(chalk.red(`❌ Failed to send results file: ${error.message}`));
              
-             // Only store as pending if immediate sending failed
-             if (result && result.filePath && result.meta) {
-               const absoluteFilePath = path.isAbsolute(result.filePath) 
-                 ? result.filePath 
-                 : path.resolve(result.filePath);
-               
-               // Store in pending results for offline delivery
-               pendingResults.set(jid, {
-                 filePath: absoluteFilePath,
-                 meta: result.meta,
-                 timestamp: new Date()
-               });
-               
-               // Save pending results to disk
-               savePendingResults();
-               
-               console.log(chalk.blue(`📱 Results stored for offline delivery: ${absoluteFilePath}`));
-             }
-             
+             // Results are already stored in pendingResults for offline delivery
              await sock.sendMessage(jid, { 
                text: `⚠️ **File sending failed.** Results are saved and will be sent when you're back online.`
              });

@@ -1,1 +1,16 @@
-{}
+{
+  "212691708186@s.whatsapp.net": {
+    "filePath": "C:\\coding\\fullscraper\\results\\dentist_in_fes_google_maps_complete_2025-08-20T22-28-41.json",
+    "meta": {
+      "niche": "Dentist in fes",
+      "source": "MAPS",
+      "dataType": "complete",
+      "format": "JSON",
+      "totalResults": 137,
+      "processedAt": "2025-08-20T22:28:41.474Z",
+      "maxResultsLimit": 300,
+      "phase": "completed"
+    },
+    "timestamp": "2025-08-20T22:28:41.475Z"
+  }
+}
